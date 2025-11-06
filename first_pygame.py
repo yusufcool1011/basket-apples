@@ -6,25 +6,34 @@ pygame.init()
 screen = pygame.display.set_mode((screen_width,screen_height))
 pygame.display.set_caption("Basket Apples")
 clock = pygame.time.Clock()
-blue = (0, 0, 255)
+bg = (144, 252, 196)
 apple = pygame.image.load("apple.png").convert_alpha()
 apple = pygame.transform.scale(apple, (50, 50))
 apple_speed = 6
 score = 0
 pygame.freetype.Font
 pygame.font.init()
-my_font = pygame.font.Font("Roboto_Slab/static/RobotoSlab-Regular.ttf", 26)
+font = pygame.font.Font("RobotoSlab-Regular.ttf", 26)
 apple_rect = apple.get_rect()
 apple_rect.center = (random.randint(50, 950), 0)
 colliding_enemies = pygame.sprite.spritecollide
 basket = pygame.image.load("basket.png").convert_alpha()
-basket = pygame.transform.scale(basket, (70, 70))
+basket = pygame.transform.scale(basket, (100, 100))
 basket_rect = basket.get_rect()
 basket_rect.y = 900
 basket_rect.x = 500
 basket_x = basket_rect.x
 apple_x = 0
 apple_y = 0
+fireball = pygame.image.load("fireball.png").convert_alpha()
+fireball = pygame.transform.scale(fireball, (50, 50))
+fireball_rect = fireball.get_rect()
+fireball_rect.center = (random.randint(50, 950), 0)
+fireball_x = 0
+fireball_y = 0
+fireball_speed = 8
+
+
 time_lasthit = 0
 
 
@@ -45,6 +54,23 @@ class Apple:
         
             
 apples = [Apple(random.randint(50, 950), random.randint(0, 300)), Apple(random.randint(50, 950), random.randint(0, 300))]
+
+class Fireball:
+    def __init__(self, x, y):
+
+        self.fireball_rect = fireball.get_rect()
+        self.fireball_rect.x = x
+        self.fireball_rect.y = y
+
+    def update_fireball(self):
+        self.fireball_rect.y += fireball_speed
+
+        if self.fireball_rect.y >= 1100:
+            self.fireball_rect.y = random.randint(0, 300)
+            self.fireball_rect.x = random.randint(50, 950)
+        
+            
+fireballs = [Fireball(random.randint(50, 950), random.randint(0, 300)), Fireball(random.randint(50, 950), random.randint(0, 300))]
 
 cube_width = 50
 cube_height = 50
@@ -69,12 +95,19 @@ while running:
     # print("Cube Coordinates", cube_x, cube_y)
     keys = pygame.key.get_pressed()
 
+    if basket_rect.x > 1000:
+        basket_rect.x = 999
+
+    if basket_rect.x < 0:
+        basket_rect.x = 1
+
+
     if keys[pygame.K_LEFT]:
         #cube_x -= cube_speed
         basket_rect.x -= cube_speed
 
     if keys[pygame.K_RIGHT]:
-        #cube_x += cube_speed
+            #cube_x += cube_speed
         basket_rect.x += cube_speed
         
     #cube_rect = pygame.Rect(cube_x, cube_y, cube_width, cube_height)
@@ -89,23 +122,33 @@ while running:
     #     apple_rect.y = 0
     #     apple_rect.x = random.randint(50, 950)
 
-    screen.fill(blue)
+    screen.fill(bg)
     #pygame.draw.rect(screen, cube_color, (cube_x, cube_y, cube_width, cube_height))
     #pygame.draw.rect(screen, cube_color, cube_rect)
     screen.blit(basket, (basket_rect.x, 900))
-    
+    score_text = font.render(f"Score: {score}", True, (0, 0, 0))    
     for applec in apples:
         applec.update_apple()
         screen.blit(apple, (applec.apple_rect.x, applec.apple_rect.y))
         
-        current_time = pygame.time.get_ticks()
-
         if applec.apple_rect.colliderect(basket_rect):
             time_lasthit = pygame.time.get_ticks()
             score += 1
             print(score)
             applec.apple_rect.y = random.randint(0, 300)
             applec.apple_rect.x = random.randint(50, 950)
+        screen.blit(score_text, (850, 50))
+
+    for fireballc in fireballs:
+        fireballc.update_fireball()
+        screen.blit(fireball, (fireballc.fireball_rect.x, fireballc.fireball_rect.y))
+
+        
+        if fireballc.fireball_rect.colliderect(basket_rect):
+            time_lasthit = pygame.time.get_ticks()
+            pygame.quit()
+
+    current_time = pygame.time.get_ticks()
 
 
     # screen.blit(apple, apple_rect)
